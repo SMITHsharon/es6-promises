@@ -1,3 +1,4 @@
+
 // Use AJAX | Promises to load all 3 JSON files
 // Iterate over all JSON files and match the human with their appropriate pet(s)
 // ES6-ify it all!
@@ -9,7 +10,7 @@ $(document).ready(function(){
 
 	const outputContainer = $("#output");
 
-	const writeToDOM = function (humanArray) {
+	const writeToDOM = (humanArray) => {
 	  let domString = "";
 	  for (let i = 0; i < humanArray.length; i++) {
 	    domString += `<div class="human row">`;
@@ -47,8 +48,12 @@ $(document).ready(function(){
 	const loadHumans = () => {
 		return new Promise((resolve, reject) => {
 			$.ajax("./database/humans.json")
-			.done ((data) => resolve(data.humans))
-			.fail ((error) => reject(error));
+			.done ((data) => {
+				resolve(data.humans);
+			})
+			.fail ((error) => {
+				reject(error);
+			});
 		});
 	};
 
@@ -83,7 +88,7 @@ $(document).ready(function(){
 	let myHumans = [];
 	let myAnimals = [];
 
-	const checkForTypeMatch = function(human, pet){
+	const checkForTypeMatch = (human, pet) => {
 		const interestedInArray = human["interested-in"];
 		const isMatchNumber = interestedInArray.indexOf(pet.type);
 		if (isMatchNumber === -1) {
@@ -94,7 +99,7 @@ $(document).ready(function(){
 	};
 
 
-	const checkForKidFriendly = function(human, pet){
+	const checkForKidFriendly = (human, pet) => {
 		const hasKids = human["has-kids"]; 
 		const isKidFriendly = pet["kid-friendly"];
 		let isMatched = true;
@@ -110,28 +115,23 @@ $(document).ready(function(){
 			human.matches = [];
 			myHumans.push(human);
 		});
-		// console.log("myHumans :: ", myHumans);
 
 		Promise.all([loadDogs(), loadCats(), loadDinos()])
 		.then(function(result){
-			// console.log("result :: ", result);
 			result.forEach(function(xhrResult){
 				xhrResult.forEach(function(animal){
 					myAnimals.push(animal);
 				});
 			});
-			// console.log("myAnimals :: ", myAnimals);
 
 			for (let i=0; i<myHumans.length; i++) {
 				for (let j=0; j<myAnimals.length; j++) {
-					// console.log("checkForTypeMatch :: ", checkForTypeMatch(myHumans[i], myAnimals[j]));
 					if (checkForTypeMatch(myHumans[i], myAnimals[j]) && 
 						checkForKidFriendly(myHumans[i], myAnimals[j])) {
 						myHumans[i].matches.push(myAnimals[j]);
 					}
 				}
 			}
-			// console.log("myHumans :: ", myHumans);
 			writeToDOM(myHumans);
 		})
 		.catch(function(animalErrors){
